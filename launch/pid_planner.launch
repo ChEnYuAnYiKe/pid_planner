@@ -1,0 +1,40 @@
+<launch>
+    <arg name="tb3_name" default="robot_1"/>
+    <arg name="odom_topic" default="/vrpn_client_node/robot_1/pose" />
+    <arg name="tb3_id" default="1"/>
+
+    <node pkg="poscmd_2_odom" type="pid_planner" name="$(arg tb3_name)_pid_planner" output="screen">
+        <param name="p_window" value="0.1" type="double"/>
+        <param name="o_window" value="1.0" type="double"/>
+        <param name="p_precision" value="0.15" type="double"/>
+        <param name="o_precision" value="1.1" type="double"/>
+	
+        <param name="max_v" value="0.31" type="double"/>
+        <param name="min_v" value="0.0" type="double"/>
+        <param name="max_v_inc" value="0.1" type="double"/>
+
+        <param name="max_w" value="0.8" type="double"/>
+        <param name="min_w" value="0.0" type="double"/>
+        <param name="max_w_inc" value="0.1" type="double"/>
+
+        <param name="k_v_p" value="1.00" type="double"/>
+        <param name="k_v_i" value="0.1" type="double"/>
+        <param name="k_v_d" value="0.1" type="double"/>
+
+        <param name="k_w_p" value="0.3" type="double"/>
+        <param name="k_w_i" value="0.000" type="double"/>
+        <param name="k_w_d" value="0.0" type="double"/>
+
+        <param name="k_theta" value="0.5" type="double"/>
+
+	<param name="tb_id" value="$(arg tb3_id)" type="int"/>
+        <remap from="~odom" to="$(arg odom_topic)"/>
+        <remap from="~point_tracking" to="$(arg tb3_name)_follow/point_tracking"/>
+        <remap from="~rb_vel" to="$(arg tb3_name)/cmd_vel"/>
+
+        <param name="one_point_move_test" value="true" />
+
+    </node>
+
+
+</launch>
