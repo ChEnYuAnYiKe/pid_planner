@@ -1,0 +1,40 @@
+<launch>
+    <arg name="tb_name" default="robot_0"/>
+    <arg name="tb_id" default="0"/>
+    <!-- <arg name="odom_topic" default="/vrpn_client_node/robot_1/pose" /> -->
+
+    <node pkg="poscmd_2_odom" type="pid_planner" name="$(arg tb_name)_pid_planner" output="screen">
+        <param name="p_window" value="0.1" type="double"/>
+        <param name="o_window" value="1.0" type="double"/>
+        <param name="p_precision" value="0.15" type="double"/>
+        <param name="o_precision" value="1.1" type="double"/>
+
+        <param name="max_v" value="0.31" type="double"/>
+        <param name="min_v" value="0.0" type="double"/>
+        <param name="max_v_inc" value="0.1" type="double"/>
+
+        <param name="max_w" value="0.8" type="double"/>
+        <param name="min_w" value="0.0" type="double"/>
+        <param name="max_w_inc" value="0.1" type="double"/>
+
+        <param name="k_v_p" value="1.00" type="double"/>
+        <param name="k_v_i" value="0.1" type="double"/>
+        <param name="k_v_d" value="0.1" type="double"/>
+
+        <param name="k_w_p" value="0.3" type="double"/>
+        <param name="k_w_i" value="0.000" type="double"/>
+        <param name="k_w_d" value="0.0" type="double"/>
+
+        <param name="k_theta" value="0.5" type="double"/>
+
+        <param name="tb_id" value="$(arg tb_id)" type="int"/>
+        <param name="one_point_move_test" value="true" />
+        <param name="controller_frequency" value="20.0" type="double"/>
+
+        <remap from="~odom" to="$(arg tb_name)/Odometry"/>
+        <remap from="~point_tracking" to="$(arg tb_name)/point_tracking"/>
+        <remap from="~rb_vel" to="$(arg tb_name)/cmd_vel"/>
+        <remap from="~global_goal" to="$(arg tb_name)/global_goal"/>
+    </node>
+
+</launch>

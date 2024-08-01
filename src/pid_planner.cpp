@@ -10,14 +10,13 @@
 // test
 namespace pid_planner
 {
-
     // init argument
     PIDPlanner::PIDPlanner()
         : init_run_flag(false), initialized_(false), goal_reached_(false),
           goal_x_(0.0), goal_y_(0.0), tracking_error_sum(0.0), tracking_error_mean(0.0),
           error_record_num(0)
     {
-
+        // 线速度和角度的初始化
         twist_odom.twist.twist.linear.x = 0.0;
         twist_odom.twist.twist.angular.z = 0.0;
     }
@@ -49,7 +48,7 @@ namespace pid_planner
             nh.param("min_w", min_w_, 0.0);
             nh.param("max_w_inc", max_w_inc_, 1.57); // maximum angular increase per time
 
-            // the P,I,D coefficient of linear velocity            角速度和线速度和角度的p,i,d的系数
+            // the P,I,D coefficient of linear velocity
             nh.param("k_v_p", k_v_p_, 1.00);
             nh.param("k_v_i", k_v_i_, 0.01);
             nh.param("k_v_d", k_v_d_, 0.10);
@@ -71,33 +70,32 @@ namespace pid_planner
             d_t_ = 1 / controller_freqency_;
 
             nh.param("tb_id", id, -1);
-            for (int i = 0; i < 4; i++)
-            {
-                nh.param("global_goal/relative_pos_" + std::to_string(i) + "/x", swarm_relative_pts_[i][0], -1.0);
-                nh.param("global_goal/relative_pos_" + std::to_string(i) + "/y", swarm_relative_pts_[i][1], -1.0);
-                nh.param("global_goal/relative_pos_" + std::to_string(i) + "/z", swarm_relative_pts_[i][2], -1.0);
-            }
+            // for (int i = 0; i < 4; i++)
+            // {
+            //     nh.param("global_goal/relative_pos_" + std::to_string(i) + "/x", swarm_relative_pts_[i][0], -1.0);
+            //     nh.param("global_goal/relative_pos_" + std::to_string(i) + "/y", swarm_relative_pts_[i][1], -1.0);
+            //     nh.param("global_goal/relative_pos_" + std::to_string(i) + "/z", swarm_relative_pts_[i][2], -1.0);
+            // }
 
-            ROS_WARN("==== id:%d, x: %.2lf,y: %.2lf ====", id, swarm_relative_pts_[id][0], swarm_relative_pts_[id][1]);
+            // ROS_WARN("==== id:%d, x: %.2lf,y: %.2lf ====", id, swarm_relative_pts_[id][0], swarm_relative_pts_[id][1]);
             //
             e_v_ = i_v_ = 0.0;
             e_w_ = i_w_ = 0.0;
 
-            // 输出控制速度
+            // 输出控制速度 /robot_x/cmd_vel
             vel_pub_ = nh.advertise<geometry_msgs::Twist>("rb_vel", 10);
 
             // 订阅里程计话题
-            odom_sub_ = nh.subscribe("odom", 5, &PIDPlanner::subOdom, this);
+            odom_sub_ = nh.subscribe("odom", 50, &PIDPlanner::subOdom, this);
 
-            // 订阅轨迹点
+            // 订阅轨迹点 若one_point_move_test==true则不订阅，使用全局目标跟踪
             if (!one_point_move_test)
             {
-                target_point_sub_ = nh.subscribe<geometry_msgs::Point>("point_tracking", 5, &PIDPlanner::pointHandler,
-                                                                       this);
+                target_point_sub_ = nh.subscribe<geometry_msgs::Point>("point_tracking", 50, &PIDPlanner::pointHandler, this);
             }
 
             // 订阅总目标
-            goal_sub_ = nh.subscribe("/move_base_simple/goal", 5, &PIDPlanner::setGoal, this);
+            goal_sub_ = nh.subscribe("global_goal", 50, &PIDPlanner::setGoal, this);
 
             // 显示目标点
             marker_pub = nh.advertise<visualization_msgs::Marker>("local_goal_vis", 1);
@@ -117,22 +115,22 @@ namespace pid_planner
         }
     }
 
-    void PIDPlanner::subOdom(const geometry_msgs::PoseStampedPtr &msg)
-    {
-        current_rb_odom.pose.pose.position.x = msg->pose.position.x;
-        current_rb_odom.pose.pose.position.y = msg->pose.position.y;
-        current_rb_odom.pose.pose.position.z = 0.0;
-        current_rb_odom.pose.pose.orientation.x = msg->pose.orientation.x;
-        current_rb_odom.pose.pose.orientation.y = msg->pose.orientation.y;
-        current_rb_odom.pose.pose.orientation.z = msg->pose.orientation.z;
-        current_rb_odom.pose.pose.orientation.w = msg->pose.orientation.w;
-        // ROS_WARN("sub odom");
-    }
-
     // void PIDPlanner::subOdom(const nav_msgs::OdometryPtr &msg)
-    //{
-    // current_rb_odom=*msg;
-    //}
+    // {
+    //     current_rb_odom.pose.pose.position.x = msg->pose.position.x;
+    //     current_rb_odom.pose.pose.position.y = msg->pose.position.y;
+    //     current_rb_odom.pose.pose.position.z = 0.0;
+    //     current_rb_odom.pose.pose.orientation.x = msg->pose.orientation.x;
+    //     current_rb_odom.pose.pose.orientation.y = msg->pose.orientation.y;
+    //     current_rb_odom.pose.pose.orientation.z = msg->pose.orientation.z;
+    //     current_rb_odom.pose.pose.orientation.w = msg->pose.orientation.w;
+    //     // ROS_WARN("sub odom");
+    // }
+
+    void PIDPlanner::subOdom(const nav_msgs::OdometryPtr &msg)
+    {
+        current_rb_odom=*msg;
+    }
 
     void PIDPlanner::pointHandler(const geometry_msgs::Point::ConstPtr &recv_point)
     {
@@ -186,8 +184,6 @@ namespace pid_planner
 
     void PIDPlanner::setGoal(const geometry_msgs::PoseStampedPtr &msg)
     {
-
-        // TODO:debug
         goal_x_ = msg->pose.position.x;
         goal_y_ = msg->pose.position.y;
 

@@ -22,7 +22,8 @@ namespace pid_planner
         void init(ros::NodeHandle &nh);
         void pointHandler(const geometry_msgs::Point::ConstPtr &recv_point);
         void setGoal(const geometry_msgs::PoseStampedPtr &msg);
-        void subOdom(const geometry_msgs::PoseStampedPtr &msg);
+        // void subOdom(const geometry_msgs::PoseStampedPtr &msg);
+        void subOdom(const nav_msgs::OdometryPtr &msg);        
         void isGoalReached();
         void computeVelocityCommands(double local_target_x_, double local_target_y_);
         void regularizeAngle(double &angle);
@@ -30,7 +31,6 @@ namespace pid_planner
         double AngularPIDController(nav_msgs::Odometry &base_odometry, double theta_d, double theta);
         double getGoalPositionDistance(double x_g, double y_g, double x, double y);
         void runCallback(const ros::TimerEvent &e);
-        //        void subOdom(const nav_msgs::OdometryPtr &msg);
         void debug_error();
 
     private:
