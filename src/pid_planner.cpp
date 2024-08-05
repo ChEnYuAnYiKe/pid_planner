@@ -78,12 +78,12 @@ namespace pid_planner
             // }
 
             // ROS_WARN("==== id:%d, x: %.2lf,y: %.2lf ====", id, swarm_relative_pts_[id][0], swarm_relative_pts_[id][1]);
-            //
+
             e_v_ = i_v_ = 0.0;
             e_w_ = i_w_ = 0.0;
 
             // 输出控制速度 /robot_x/cmd_vel
-            vel_pub_ = nh.advertise<geometry_msgs::Twist>("rb_vel", 10);
+            vel_pub_ = nh.advertise<geometry_msgs::Twist>("rb_vel", 50);
 
             // 订阅里程计话题
             odom_sub_ = nh.subscribe("odom", 50, &PIDPlanner::subOdom, this);
